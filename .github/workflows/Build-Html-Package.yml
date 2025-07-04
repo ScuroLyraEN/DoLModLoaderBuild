@@ -261,36 +261,6 @@ jobs:
           destBase: ${{ github.workspace }}/ModLoader/out
           target: ${{ github.workspace }}/ModLoader/out
 
-      - name: Build I18nTweeList
-        working-directory: ${{ github.workspace }}/ModLoader/mod/I18nTweeList
-        run: |
-          yarn install
-          yarn run build:ts
-          yarn run build:webpack
-          node "${{ github.workspace }}/ModLoader/dist-insertTools/packModZip.js" "boot.json"
-      - name: Copy I18nTweeList
-        uses: Lyoko-Jeremie/js-copy-github-action@master
-        with:
-          srcBase: ${{ github.workspace }}/ModLoader/
-          source: ${{ github.workspace }}/ModLoader/mod/I18nTweeList/I18nTweeList.mod.zip
-          destBase: ${{ github.workspace }}/ModLoader/out
-          target: ${{ github.workspace }}/ModLoader/out
-
-      - name: Build I18nScriptList
-        working-directory: ${{ github.workspace }}/ModLoader/mod/I18nScriptList
-        run: |
-          yarn install
-          yarn run build:ts
-          yarn run build:webpack
-          node "${{ github.workspace }}/ModLoader/dist-insertTools/packModZip.js" "boot.json"
-      - name: Copy I18nScriptList
-        uses: Lyoko-Jeremie/js-copy-github-action@master
-        with:
-          srcBase: ${{ github.workspace }}/ModLoader/
-          source: ${{ github.workspace }}/ModLoader/mod/I18nScriptList/I18nScriptList.mod.zip
-          destBase: ${{ github.workspace }}/ModLoader/out
-          target: ${{ github.workspace }}/ModLoader/out
-
       - name: Build ReplacePatch
         working-directory: ${{ github.workspace }}/ModLoader/mod/ReplacePatch
         run: |
@@ -528,6 +498,13 @@ jobs:
 
       # /DoL  OK =========================================
 
+      - name: Get DoL Version
+        working-directory: ${{ github.workspace }}/ModLoader/out
+        run: |
+          # get version numbers
+          ver_dol=$(echo $modi18n_basename | cut -d '-' -f 2)
+          echo "ver_dol=${ver_dol}" >> "$GITHUB_ENV"
+
       # /Start Lyra Modify =========================================
       - name: MKDIR
         run: |
@@ -565,7 +542,13 @@ jobs:
           mkdir mod/CombatStatusDisplay
           mv CombatStatusDisplay-Lyra-*.mod.zip mod/CombatStatusDisplay/CombatStatusDisplay-Lyra.mod.zip
 
-      - name: Inject ModLoader With i18n Cheat (2)
+      - name: Inject ModLoader
+        working-directory: ${{ github.workspace }}/ModLoader/out
+        run: |
+          node "${{ github.workspace }}/ModLoader/out/dist-insertTools/insert2html.js" "${{ github.workspace }}/DoL/Degrees of Lewdity VERSION.html" "modList.json" "${{ github.workspace }}/ModLoader/out/dist-BeforeSC2/BeforeSC2.js"
+          mv "${{ github.workspace }}/DoL/Degrees of Lewdity VERSION.html.mod.html" "${{ github.workspace }}/tmp/0/Degrees of Lewdity.html"
+
+      - name: Inject ModLoader Cheat (2)
         working-directory: ${{ github.workspace }}/ModLoader/out
         run: |
           CODE=2
@@ -574,7 +557,7 @@ jobs:
           node "${{ github.workspace }}/ModLoader/out/dist-insertTools/insert2html.js" "${{ github.workspace }}/DoL/Degrees of Lewdity VERSION.html" "modList_$CODE.json" "${{ github.workspace }}/ModLoader/out/dist-BeforeSC2/BeforeSC2.js"
           mv "${{ github.workspace }}/DoL/Degrees of Lewdity VERSION.html.mod.html" "${{ github.workspace }}/tmp/$CODE/Degrees of Lewdity.html"
 
-      - name: Inject ModLoader With i18n CSD (4)
+      - name: Inject ModLoader CSD (4)
         working-directory: ${{ github.workspace }}/ModLoader/out
         run: |
           CODE=4
@@ -583,7 +566,7 @@ jobs:
           node "${{ github.workspace }}/ModLoader/out/dist-insertTools/insert2html.js" "${{ github.workspace }}/DoL/Degrees of Lewdity VERSION.html" "modList_$CODE.json" "${{ github.workspace }}/ModLoader/out/dist-BeforeSC2/BeforeSC2.js"
           mv "${{ github.workspace }}/DoL/Degrees of Lewdity VERSION.html.mod.html" "${{ github.workspace }}/tmp/$CODE/Degrees of Lewdity.html"
 
-      - name: Inject ModLoader With i18n Cheat CSD (6)
+      - name: Inject ModLoader Cheat CSD (6)
         working-directory: ${{ github.workspace }}/ModLoader/out
         run: |
           CODE=6
@@ -592,7 +575,7 @@ jobs:
           node "${{ github.workspace }}/ModLoader/out/dist-insertTools/insert2html.js" "${{ github.workspace }}/DoL/Degrees of Lewdity VERSION.html" "modList_$CODE.json" "${{ github.workspace }}/ModLoader/out/dist-BeforeSC2/BeforeSC2.js"
           mv "${{ github.workspace }}/DoL/Degrees of Lewdity VERSION.html.mod.html" "${{ github.workspace }}/tmp/$CODE/Degrees of Lewdity.html"
 
-      - name: Inject ModLoader-compatibility With i18n Cheat CSD (6-polyfill)
+      - name: Inject ModLoader-compatibility Cheat CSD (6-polyfill)
         working-directory: ${{ github.workspace }}/ModLoader/out
         run: |
           jq '. += ["mod/Cheat/Cheat-Lyra.mod.zip","mod/CombatStatusDisplay/CombatStatusDisplay-Lyra.mod.zip"]' modList.json > modList_6_polyfill.json
@@ -602,13 +585,13 @@ jobs:
       # Package
       - name: Packages
         run: |
-          ver=( 2 4 6 132 134 )
+          ver=( 0 2 4 6 )
           for v in "${ver[@]}"
           do
             # cp ${{ github.workspace }}/DoL/style.css ${{ github.workspace }}/tmp/$v/
             cp -r ${{ github.workspace }}/DoL/img ${{ github.workspace }}/tmp/$v/
             pushd ${{ github.workspace }}/tmp/$v/
-            zip -r DoL-ModLoader-${{ env.ver_dol }}-${{ env.ver_chs }}-$v.zip *
+            zip -r DoL-ModLoader-${{ env.ver_dol }}-$v.zip *
             mv DoL-ModLoader-*.zip ${{ github.workspace }}/output/
             popd
           done
@@ -619,7 +602,7 @@ jobs:
           # cp ${{ github.workspace }}/DoL/style.css ${{ github.workspace }}/tmp/polyfill/
           cp -r ${{ github.workspace }}/DoL/img ${{ github.workspace }}/tmp/polyfill/
           pushd ${{ github.workspace }}/tmp/polyfill/
-          zip -r DoL-ModLoader-${{ env.ver_dol }}-${{ env.ver_chs }}-polyfill-6.zip *
+          zip -r DoL-ModLoader-${{ env.ver_dol }}-polyfill-6.zip *
           mv DoL-ModLoader-*.zip ${{ github.workspace }}/output/
           popd
 
@@ -629,7 +612,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: Html Package-${{ github.sha }}
-          path: ${{ github.workspace }}/output/DoL-ModLoader-${{ env.ver_dol }}-${{ env.ver_chs }}*.zip
+          path: ${{ github.workspace }}/output/DoL-ModLoader-${{ env.ver_dol }}-*.zip
 
       - name: Get Current Time
         id: time
@@ -642,7 +625,7 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           files: |
-            output/DoL-ModLoader-${{ env.ver_dol }}-${{ env.ver_chs }}*.zip
+            output/DoL-ModLoader-${{ env.ver_dol }}-*.zip
           name: Auto Release on ${{ steps.time.outputs.time }} (${{ github.sha }})
           tag_name: auto-${{ steps.time.outputs.time }}-${{ github.sha }}
           body: Auto Release on ${{ steps.time.outputs.time }} (${{ github.sha }})
