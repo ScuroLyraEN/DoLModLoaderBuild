@@ -540,6 +540,7 @@ jobs:
         run: |
           mkdir ${{ github.workspace }}/output
           mkdir ${{ github.workspace }}/tmp
+          mkdir ${{ github.workspace }}/tmp/0 # no mods
           mkdir ${{ github.workspace }}/tmp/2 # cheat
           mkdir ${{ github.workspace }}/tmp/4 # csd
           mkdir ${{ github.workspace }}/tmp/6 # cheat+csd
