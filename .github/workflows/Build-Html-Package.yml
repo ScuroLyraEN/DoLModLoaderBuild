@@ -9,6 +9,7 @@ on:
 
 env:
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  ver_dol: 0.5.4.9
 
 permissions:
   contents: write
@@ -528,19 +529,12 @@ jobs:
 
       # /DoL  OK =========================================
 
-      - name: Get DoL Version
-        working-directory: ${{ github.workspace }}/ModLoader/out
-        run: |
-          # get version numbers
-          ver_dol=$(echo $modi18n_basename | cut -d '-' -f 2)
-          echo "ver_dol=${ver_dol}" >> "$GITHUB_ENV"
-
       # /Start Lyra Modify =========================================
       - name: MKDIR
         run: |
           mkdir ${{ github.workspace }}/output
           mkdir ${{ github.workspace }}/tmp
-          mkdir ${{ github.workspace }}/tmp/0 # no mods
+          mkdir ${{ github.workspace }}/tmp/0
           mkdir ${{ github.workspace }}/tmp/2 # cheat
           mkdir ${{ github.workspace }}/tmp/4 # csd
           mkdir ${{ github.workspace }}/tmp/6 # cheat+csd
